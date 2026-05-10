@@ -7,6 +7,8 @@ import cors from "cors";
 import connect from "./config/db.ts";
 import errorHandler from "./middlewares/error.middleware.ts";
 import AuthRouter from "./routes/auth.routes.ts";
+import logger from "./middlewares/logger.ts";
+import { ServerError } from "./global/types.ts";
 
 const app: Express = express();
 
@@ -23,12 +25,16 @@ async function start(): Promise<void> {
 
   try {
     app.listen(PORT, (): void => {
-      console.log(`=> Server listening on port ${PORT}`);
+      logger.info(`Server listening on port ${PORT}`);
     });
 
     await connect();
-  } catch (err: any) {
-    console.log(`|> ${err.message}`);
+  } catch (err: unknown) {
+    if (err instanceof ServerError || err instanceof Error) {
+      logger.error(err.message);
+    }
+
+    logger.error(err);
   }
 }
 
