@@ -106,4 +106,26 @@ const verifyAccount = wrapper(
   },
 );
 
+const login = wrapper(
+  async (req: Request, res: Response): Promise<Response> => {
+    const {
+      email,
+      password,
+    }: { email: string | undefined; password: string | undefined } = req.body;
+
+    const result = AccountZodObject.safeParse({ email, password });
+
+    if (!result.success) {
+      logger.error(result.error);
+
+      return res.status(400).json({
+        status: 400,
+        message: result.error,
+      });
+    }
+
+    return res;
+  },
+);
+
 export { register, verifyAccount };
