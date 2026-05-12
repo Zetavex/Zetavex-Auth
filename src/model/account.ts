@@ -1,14 +1,14 @@
 import * as mongoose from "mongoose";
 import validator from "validator";
 
-const IdSchema = new mongoose.Schema(
+const AccountSchema = new mongoose.Schema(
   {
     username: {
       type: String,
       required: [true, "A username is required"],
       trim: true,
       unique: [true, "This username is already in use"],
-      minLength: [4, "A username should contain 4 or more characters"]
+      minLength: [4, "A username should contain 4 or more characters"],
     },
     email: {
       type: String,
@@ -37,9 +37,9 @@ const IdSchema = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-const IdModel = mongoose.model("Id", IdSchema);
+const AccountModel = mongoose.model("Id", AccountSchema);
 
-export default IdModel;
+export default AccountModel;
