@@ -241,12 +241,15 @@ const login = wrapper(
       { expiresIn: "30m" },
     );
 
-    const refreshToken: { token: string; expiry: Date } = {
+    const refreshTokenObj: { token: string; expiry: Date } = {
       token: uuidv4(),
       expiry: new Date(Date.now() + 30 * 24 * 60 * 1000),
     };
 
-    res.cookie("Refresh-Token-Id", refreshToken, {
+    account.refreshToken.push(refreshTokenObj);
+    await account.save();
+
+    res.cookie("Refresh-Token-Id", refreshTokenObj.token, {
       httpOnly: true,
       secure: true,
       sameSite: "strict",
@@ -271,4 +274,4 @@ const login = wrapper(
   },
 );
 
-export { register, verifyAccount, resendVerificationCode, login };
+export { register, verifyAccount, resendVerificationCode, login, logout };
