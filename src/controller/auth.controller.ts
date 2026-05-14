@@ -1,4 +1,5 @@
 import type { Response, Request } from "express";
+import { Types } from "mongoose";
 import wrapper from "../middlewares/asyncWrapper.middleware.ts";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
@@ -179,10 +180,20 @@ const login = wrapper(
       sameSite: "strict",
     });
 
+    const accountData: {
+      _id: Types.ObjectId;
+      username: string;
+      email: string;
+    } = {
+      _id: account._id,
+      username: account.username,
+      email: account.email,
+    };
+
     return res.status(200).json({
       status: 200,
       message: "Logged in successfully",
-      account: account,
+      account: accountData,
       token: accessToken,
     });
   },
