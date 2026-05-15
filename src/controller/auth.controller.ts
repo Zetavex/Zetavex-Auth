@@ -293,7 +293,18 @@ const logout = wrapper(
       });
     }
 
-    return res.json({});
+    const account = await AccountModel.findOne(
+      { "refreshToken.token": refreshToken },
+      { __v: false, password: false },
+    );
+
+    account.refreshToken.pull({ token: refreshToken });
+    await account.save();
+
+    return res.status(200).json({
+      status: 200,
+      message: "Session ended successfully",
+    });
   },
 );
 
