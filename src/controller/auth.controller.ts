@@ -382,7 +382,7 @@ const logoutAllRequest = wrapper(
         message: "Account not found. Invalid session id",
       });
     }
-    
+
     for (let i: number = 0; i < account.refreshToken.length; i++) {
       let current: {
         token?: string | null | undefined;
@@ -494,6 +494,102 @@ const logoutAll = wrapper(
   },
 );
 
+const refresh = wrapper(
+  async (req: Request, res: Response): Promise<Response> => {
+    const cookieValidation = z.object({
+      token: z.uuidv4("Invalid refresh token"),
+    });
+
+    const result = cookieValidation.safeParse({
+      token: req.cookies["Refresh-Token-Id"],
+    });
+
+    if (!result.success) {
+      logger.error({ message: z.prettifyError(result.error) });
+
+      return res.status(400).json({
+        status: 400,
+        message: z.flattenError(result.error).fieldErrors,
+      });
+    }
+
+    const token: string = result.data.token;
+
+    const account = await AccountModel.findOne(
+      { "refreshToken.token": token },
+      { __v: false, password: false },
+    );
+
+    if (!account) {
+      logger.error({
+        message: "Account not found. Invalid session id",
+        token: token,
+      });
+
+      return res.status(404).json({
+        status: 404,
+        message: "Account not found. Invalid session id",
+      });
+    }
+
+    for (let i: number = 0; i < account.refreshToken.length; i++) {
+      const current: {
+        token?: string | null | undefined;
+        expiry?: NativeDate | null | undefined;
+      } = account.refreshToken[i];
+
+      if (current.token === token) {
+        if (current.expiry && current.expiry < new Date(Date.now())) {
+          logger.warn({
+            message: "Session id already expired",
+            account: account.email,
+            id: token,
+          });
+
+          account.refreshToken.pull({ token });
+          await account.save();
+
+          return res.status(400).json({
+            status: 400,
+            message: "Session id already expired",
+          });
+        }
+      }
+    }
+
+    const accessToken = jwt.sign(
+      { email: account.email },
+      process.env.JWT_SECRET ?? "",
+      { expiresIn: "30m" },
+    );
+
+    const newRefreshTokenObj: { token: string; expiry: Date } = {
+      token: uuidv4(),
+      expiry: new Date(Date.now() + 30 * 24 * 60 * 1000),
+    };
+
+    await AccountModel.updateOne(
+      { "refreshToken.token": token },
+      { $pull: { refreshToken: { token } } },
+    );
+
+    account.refreshToken.push(newRefreshTokenObj);
+    await account.save();
+
+    res.cookie("Refresh-Token-Id", newRefreshTokenObj.token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+    });
+
+    return res.status(200).json({
+      status: 200,
+      message: "Refreshed access token",
+      token: accessToken,
+    });
+  },
+);
+
 export {
   register,
   verifyAccount,
@@ -502,4 +598,5 @@ export {
   logout,
   logoutAllRequest,
   logoutAll,
+  refresh,
 };

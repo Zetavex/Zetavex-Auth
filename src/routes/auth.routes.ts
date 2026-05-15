@@ -9,6 +9,7 @@ import {
   logout,
   logoutAllRequest,
   logoutAll,
+  refresh,
 } from "../controller/auth.controller.ts";
 
 const AuthRouter: Router = express.Router();
@@ -21,5 +22,7 @@ AuthRouter.post("/login", login);
 AuthRouter.post("/logout", logout);
 AuthRouter.post("/request/logout-all", logoutAllRequest);
 AuthRouter.post("/logout-all", logoutAll);
+
+AuthRouter.post("/refresh", refresh);
 
 export default AuthRouter;
