@@ -342,4 +342,66 @@ const logout = wrapper(
   },
 );
 
-export { register, verifyAccount, resendVerificationCode, login, logout };
+const logoutAllRequest = wrapper(
+  async (req: Request, res: Response): Promise<Response> => {
+    const refreshTokenValidation = z.object({
+      token: z.uuidv4("Invalid refresh token"),
+    });
+
+    const result = refreshTokenValidation.safeParse({
+      token: req.cookies["Refresh-Token-Id"],
+    });
+
+    if (!result.success) {
+      logger.error({ message: z.prettifyError(result.error) });
+
+      return res.status(400).json({
+        status: 400,
+        message: z.flattenError(result.error).fieldErrors,
+      });
+    }
+
+    const refreshToken = result.data.token;
+
+    const account = await AccountModel.findOne(
+      { "refreshToken.token": refreshToken },
+      { __v: false, password: false },
+    );
+
+    if (!account) {
+      logger.error({
+        message: "Account not found. Invalid session id",
+        token: refreshToken,
+      });
+
+      return res.status(404).json({
+        status: 404,
+        message: "Account not found. Invalid session id",
+      });
+    }
+
+    const code: number = crypto.randomInt(100000, 999999);
+    const expiry: Date = new Date(Date.now() + 10 * 60 * 1000);
+
+    account.verificationCode = code;
+    account.verificationExpiry = expiry;
+    await account.save();
+
+    const mailer: Mailer = new Mailer();
+    await mailer.sendLogoutAllVerificationMail(account.email, code);
+
+    return res.status(200).json({
+      status: 200,
+      message: "Verification code sent to email",
+    });
+  },
+);
+
+export {
+  register,
+  verifyAccount,
+  resendVerificationCode,
+  login,
+  logout,
+  logoutAllRequest,
+};
