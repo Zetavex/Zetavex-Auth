@@ -298,6 +298,25 @@ const logout = wrapper(
       { __v: false, password: false },
     );
 
+    for (let i: number = 0; i < account.refreshToken.length; i++) {
+      let current: { token: String; expiry: Date } = account.refreshToken;
+
+      if (current.token === refreshToken) {
+        if (current.expiry < new Date(Date.now())) {
+          logger.warn({
+            message: "Session id already expired",
+            account: account.email,
+            id: refreshToken,
+          });
+
+          return res.status(400).json({
+            status: 400,
+            message: "Session id already expired",
+          });
+        }
+      }
+    }
+
     account.refreshToken.pull({ token: refreshToken });
     await account.save();
 
