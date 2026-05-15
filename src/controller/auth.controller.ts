@@ -309,6 +309,9 @@ const logout = wrapper(
             id: refreshToken,
           });
 
+          account.refreshToken.pull({ token: refreshToken });
+          await account.save();
+
           return res.status(400).json({
             status: 400,
             message: "Session id already expired",
