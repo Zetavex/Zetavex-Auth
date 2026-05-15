@@ -243,7 +243,7 @@ const login = wrapper(
 
     const refreshTokenObj: { token: string; expiry: Date } = {
       token: uuidv4(),
-      expiry: new Date(Date.now() + 30 * 24 * 60 * 1000),
+      expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     };
 
     account.refreshToken.push(refreshTokenObj);
@@ -565,7 +565,7 @@ const refresh = wrapper(
 
     const newRefreshTokenObj: { token: string; expiry: Date } = {
       token: uuidv4(),
-      expiry: new Date(Date.now() + 30 * 24 * 60 * 1000),
+      expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     };
 
     await AccountModel.updateOne(
