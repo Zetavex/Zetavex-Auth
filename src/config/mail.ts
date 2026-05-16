@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import { ServerError } from "../global/types.ts";
 import type { MailerType } from "../global/types.ts";
 import logger from "../middlewares/logger.ts";
+import mailerError from "../middlewares/mailer.error.handler.ts";
 
 class Mailer implements MailerType {
   private mail: string | undefined = process.env.EMAIL;
@@ -60,17 +61,7 @@ class Mailer implements MailerType {
 
       logger.info(`Email sent [ ${mail.messageId} ]`);
     } catch (err: unknown) {
-      if (err instanceof ServerError) {
-        logger.error({ status: err.statusCode, message: err.message });
-        return;
-      }
-
-      if (err instanceof Error) {
-        logger.error(err.message);
-        return;
-      }
-
-      logger.error({ message: "An error occured", errorMessage: err });
+      mailerError(err);
     }
   }
 
@@ -88,17 +79,7 @@ class Mailer implements MailerType {
 
       logger.info(`Email sent [ ${mail.messageId} ]`);
     } catch (err: unknown) {
-      if (err instanceof ServerError) {
-        logger.error({ status: err.statusCode, message: err.message });
-        return;
-      }
-
-      if (err instanceof Error) {
-        logger.error(err.message);
-        return;
-      }
-
-      logger.error({ message: "An error occured", errorMessage: err });
+      mailerError(err);
     }
   }
 
@@ -116,16 +97,7 @@ class Mailer implements MailerType {
 
       logger.info(`Email sent [ ${mail.messageId} ]`);
     } catch (err: unknown) {
-      if (err instanceof ServerError) {
-        logger.error({ status: err.statusCode, message: err.message });
-        return;
-      }
-
-      if (err instanceof Error) {
-        logger.error(err.message);
-      }
-
-      logger.error({ message: "An error occured", errorMessage: err });
+      mailerError(err);
     }
   }
 }
