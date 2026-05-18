@@ -583,6 +583,71 @@ const resetPasswordToken = wrapper(
   },
 );
 
+const resetPassword = wrapper(
+  async (req: Request, res: Response): Promise<Response> => {
+    const cookieValidation = z.object({
+      token: z.uuidv4("Invalid reset token"),
+    });
+
+    const result = cookieValidation.safeParse({
+      token: req.cookies["Password-Reset-UUID"],
+    });
+
+    if (!result.success) return validationErrorHandler(res, result);
+
+    const resetCookie = result.data.token;
+
+    const account = await AccountModel.findOne(
+      { resetToken: resetCookie },
+      { __v: false },
+    );
+
+    if (!account) return accountNotFoundHandler(res, { token: resetCookie });
+
+    if (account.resetExpiry && account.resetExpiry < new Date(Date.now())) {
+      logger.warn({ message: "Reset token expired", account: account.email });
+
+      account.resetToken = null;
+      account.resetExpiry = null;
+      await account.save();
+
+      return res.status(400).json({
+        status: 400,
+        message: "Reset token expired",
+      });
+    }
+
+    const bodyValidation = z.object({
+      password: z.string().min(6, "Password too short (6 or more characters)"),
+    });
+
+    const bodyResult = bodyValidation.safeParse(req.body);
+
+    if (!bodyResult.success) return validationErrorHandler(res, bodyResult);
+
+    const hashedPassword: string = await bcrypt.hash(
+      bodyResult.data.password,
+      10,
+    );
+
+    account.password = hashedPassword;
+    account.resetCode = null;
+    account.resetExpiry = null;
+    account.resetToken = null;
+    await account.save();
+
+    logger.info({
+      message: "Password reset successfully",
+      account: account.email,
+    });
+
+    return res.status(200).json({
+      status: 200,
+      message: "Password reset successfully",
+    });
+  },
+);
+
 export {
   register,
   verifyAccount,
@@ -594,4 +659,5 @@ export {
   refresh,
   forgotPassword,
   resetPasswordToken,
+  resetPassword,
 };
