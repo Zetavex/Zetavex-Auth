@@ -740,10 +740,7 @@ const deleteAccount = wrapper(
 
     logger.info({ message: "Account deleted", account: account.email });
 
-    return res.status(204).json({
-      status: 204,
-      message: "Account deleted",
-    });
+    return res.status(204);
   },
 );
 
