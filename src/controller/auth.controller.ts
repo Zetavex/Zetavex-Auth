@@ -764,6 +764,8 @@ const deleteAccount = wrapper(
 
     logger.info({ message: "Account deleted", account: account.email });
 
+    mailer.sendAccountDeletedMail(account.email, account.username);
+
     return res.status(204);
   },
 );

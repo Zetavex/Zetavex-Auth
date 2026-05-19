@@ -150,6 +150,22 @@ class Mailer implements MailerType {
       mailerError(err);
     }
   }
+
+  public async sendAccountDeletedMail(
+    email: string,
+    username: string,
+  ): Promise<void> {
+    try {
+      const mail = await this.transporter.sendMail({
+        from: this.mail,
+        to: email,
+        subject: "Account deleted",
+        html: /* html */ `Your account has been deleted ${username}`,
+      });
+    } catch (err: unknown) {
+      mailerError(err);
+    }
+  }
 }
 
 export default Mailer;
