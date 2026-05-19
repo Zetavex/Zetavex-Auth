@@ -99,6 +99,24 @@ class Mailer implements MailerType {
       mailerError(err);
     }
   }
+
+  public async sendDeleteAccountRequestMail(
+    email: string,
+    code: number,
+  ): Promise<void> {
+    try {
+      const mail = await this.transporter.sendMail({
+        from: this.mail,
+        to: email,
+        subject: "Delete account verification",
+        html: /* html */ `Delete account verification: ${code}`,
+      });
+
+      logger.info(`Email sent [ ${mail.messageId} ]`);
+    } catch (err: unknown) {
+      mailerError(err);
+    }
+  }
 }
 
 export default Mailer;

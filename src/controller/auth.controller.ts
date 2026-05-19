@@ -682,6 +682,9 @@ const deleteAccountRequest = wrapper(
     account.deleteAccountExpiry = expiry;
     await account.save();
 
+    const mailer: Mailer = new Mailer();
+    await mailer.sendDeleteAccountRequestMail(account.email, code);
+
     return res.status(200).json({
       status: 200,
       message: "New verification code sent to email",
