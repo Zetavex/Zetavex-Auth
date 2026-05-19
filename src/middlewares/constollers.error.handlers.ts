@@ -78,4 +78,21 @@ const accountNotVerified = (res: Response, email: string): Response => {
   });
 };
 
-export { validationErrorHandler, accountNotFoundHandler, accountNotVerified };
+const incorrectPassword = (res: Response, email: string): Response => {
+  logger.error({
+    message: "Email or password are incorrect",
+    account: email,
+  });
+
+  return res.status(401).json({
+    status: 401,
+    message: "Email or password are incorrect",
+  });
+};
+
+export {
+  validationErrorHandler,
+  accountNotFoundHandler,
+  accountNotVerified,
+  incorrectPassword,
+};

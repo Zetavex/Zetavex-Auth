@@ -14,6 +14,7 @@ import logger from "../middlewares/logger.ts";
 import {
   accountNotFoundHandler,
   accountNotVerified,
+  incorrectPassword,
   validationErrorHandler,
 } from "../middlewares/constollers.error.handlers.ts";
 
@@ -180,17 +181,7 @@ const login = wrapper(
       account.password,
     );
 
-    if (!correctPassword) {
-      logger.error({
-        message: "Email or password are incorrect",
-        account: email,
-      });
-
-      return res.status(401).json({
-        status: 401,
-        message: "Email or password are incorrect",
-      });
-    }
+    if (!correctPassword) return incorrectPassword(res, email);
 
     const accessToken = jwt.sign(
       { email: email },
@@ -653,6 +644,47 @@ const resetPassword = wrapper(
     return res.status(200).json({
       status: 200,
       message: "Password reset successfully",
+    });
+  },
+);
+
+const deleteAccountRequest = wrapper(
+  async (req: Request, res: Response): Promise<Response> => {
+    const accountVerification = AccountZodObject.pick({
+      email: true,
+      password: true,
+    });
+
+    const result = accountVerification.safeParse(req.body);
+
+    if (!result.success) return validationErrorHandler(res, result);
+
+    const { email, password }: { email: string; password: string } =
+      result.data;
+
+    const account = await AccountModel.findOne({ email }, { __v: false });
+
+    if (!account) return accountNotFoundHandler(res, { email });
+
+    if (!account.isVerified) return accountNotVerified(res, account.email);
+
+    const correctPassword: boolean = await bcrypt.compare(
+      password ?? "",
+      account.password,
+    );
+
+    if (!correctPassword) return incorrectPassword(res, email);
+
+    const code: number = crypto.randomInt(100000, 999999);
+    const expiry: Date = new Date(Date.now() + 10 * 60 * 1000);
+
+    account.deleteAccountCode = code;
+    account.deleteAccountExpiry = expiry;
+    await account.save();
+
+    return res.status(200).json({
+      status: 200,
+      message: "New verification code sent to email",
     });
   },
 );
