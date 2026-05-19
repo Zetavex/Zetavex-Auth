@@ -231,7 +231,7 @@ const logout = wrapper(
 
     if (!account) return accountNotFoundHandler(res, { token: refreshToken });
 
-    if (!account.isVerified) return accountNotVerified(res, email);
+    if (!account.isVerified) return accountNotVerified(res, account.email);
 
     for (let i: number = 0; i < account.refreshToken.length; i++) {
       let current: {
@@ -289,7 +289,7 @@ const logoutAllRequest = wrapper(
 
     if (!account) return accountNotFoundHandler(res, { token: refreshToken });
 
-    if (!account.isVerified) return accountNotVerified(res, email);
+    if (!account.isVerified) return accountNotVerified(res, account.email);
 
     for (let i: number = 0; i < account.refreshToken.length; i++) {
       let current: {
@@ -352,7 +352,7 @@ const logoutAll = wrapper(
 
     if (!account) return accountNotFoundHandler(res, { code });
 
-    if (!account.isVerified) return accountNotVerified(res, email);
+    if (!account.isVerified) return accountNotVerified(res, account.email);
 
     if (
       account.verificationExpiry &&
@@ -408,7 +408,7 @@ const refresh = wrapper(
 
     if (!account) return accountNotFoundHandler(res, { token });
 
-    if (!account.isVerified) return accountNotVerified(res, email);
+    if (!account.isVerified) return accountNotVerified(res, account.email);
 
     for (let i: number = 0; i < account.refreshToken.length; i++) {
       const current: {
@@ -527,7 +527,7 @@ const resetPasswordToken = wrapper(
 
     if (!account) return accountNotFoundHandler(res, { code });
 
-    if (!account.isVerified) return accountNotVerified(res, email);
+    if (!account.isVerified) return accountNotVerified(res, account.email);
 
     if (account.resetExpiry && account.resetExpiry < new Date(Date.now())) {
       logger.warn({
@@ -602,7 +602,7 @@ const resetPassword = wrapper(
 
     if (!account) return accountNotFoundHandler(res, { token: resetCookie });
 
-    if (!account.isVerified) return accountNotVerified(res, email);
+    if (!account.isVerified) return accountNotVerified(res, account.email);
 
     if (account.resetExpiry && account.resetExpiry < new Date(Date.now())) {
       logger.warn({ message: "Reset token expired", account: account.email });
@@ -757,9 +757,12 @@ const me = wrapper(async (req: Request, res: Response): Promise<Response> => {
 
   const accessToken: string = result.data.token;
 
-  const decoded = jwt.verify(accessToken, process.env.JWT_SECRET ?? "");
+  const decoded: string = String(
+    jwt.verify(accessToken, process.env.JWT_SECRET ?? ""),
+  );
+  const obj: { email: string } = JSON.parse(decoded);
 
-  const email: string = decoded.email;
+  const email: string = obj.email;
 
   const account = await AccountModel.findOne(
     { email },
