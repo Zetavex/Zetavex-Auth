@@ -14,10 +14,15 @@ import { ServerError } from "./global/types.ts";
 const app: Express = express();
 
 app.use(express.json());
-app.use(bodyParser.json());
 app.use(cookieParser());
+app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+  credentials: true,
+  methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
 app.use("/auth", AuthRouter);
 app.use(errorHandler);

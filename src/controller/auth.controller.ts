@@ -119,7 +119,7 @@ const verifyAccount = wrapper(
     const codeValidation = z.object({
       code: z.coerce
         .number("Invalid verification code")
-        .min(6, "Verification code too short"),
+        .min(6, "Verification code too short")
     });
 
     const result: safeParseResult<{ code: number }> = codeValidation.safeParse(
@@ -581,16 +581,18 @@ const resetPasswordToken = wrapper(
 
     const resetCookie = uuidv4();
 
-    res.cookie("Password-Reset-UUID", resetCookie, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-    });
-
     account.resetToken = resetCookie;
     account.resetCode = null;
     account.resetExpiry = new Date(Date.now() + 1 * 60 * 60 * 1000);
     await account.save();
+
+    res.cookie("Password-Reset-UUID", resetCookie, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "none",
+      path: "/",
+      maxAge: 10 * 60 * 1000
+    });
 
     return res.status(200).json({
       status: 200,
@@ -602,7 +604,7 @@ const resetPasswordToken = wrapper(
 const resetPassword = wrapper(
   async (req: Request, res: Response): Promise<Response> => {
     const cookieValidation = z.object({
-      token: z.uuidv4("Invalid reset token"),
+      token: z.uuidv4("An error occured while processing your request. Please retry getting a new reset link"),
     });
 
     const result: safeParseResult<{ token: string }> =
@@ -662,6 +664,10 @@ const resetPassword = wrapper(
     });
 
     mailer.sendPasswrodChangedMail(account.email);
+
+    res.clearCookie("Password-Reset-UUID", {
+      path: "/"
+    })
 
     return res.status(200).json({
       status: 200,

@@ -37,25 +37,25 @@ const accountNotFoundHandler = (
 
   if (options.token) {
     logger.error({
-      message: "Account not found. Invalid session id",
+      message: "Invalid cerdentials.",
       token: options.token,
     });
 
     return res.status(404).json({
       status: 404,
-      message: "Account not found. Invalid session id",
+      message: "Invalid cerdentials.",
     });
   }
 
   if (options.code) {
     logger.error({
-      message: "Account not found. Invalid verification code",
+      message: "Invalid link. This code might be already used or expired.",
       code: options.code,
     });
 
     return res.status(404).json({
       status: 404,
-      message: "Account not found. Invalid verification code",
+      message: "Invalid link. This code might be already used or expired.",
     });
   }
 
