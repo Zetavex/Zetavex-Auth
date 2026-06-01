@@ -636,7 +636,8 @@ const resetPassword = wrapper(
 
       return res.status(400).json({
         status: 400,
-        message: "Reset token expired",
+        message:
+          "Operation non permitted. Cerdentials already expired. Please try again.",
       });
     }
 
@@ -701,6 +702,19 @@ const cancelReset = wrapper(
     if (!account) return accountNotFoundHandler(res, { token });
 
     if (!account.isVerified) return accountNotVerified(res, account.email);
+
+    if (account.resetExpiry && account.resetExpiry < new Date(Date.now())) {
+      logger.warn({ message: "Reset token expired", account: account.email });
+
+      account.resetToken = null;
+      account.resetExpiry = null;
+      await account.save();
+
+      return res.status(400).json({
+        status: 400,
+        message: "Operation canceled. Cerdentials already expired.",
+      });
+    }
 
     account.resetToken = null;
     account.resetExpiry = null;
