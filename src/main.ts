@@ -5,6 +5,7 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 
 import connect from "./config/db.ts";
 import errorHandler from "./middlewares/error.middleware.ts";
@@ -33,6 +34,19 @@ app.use(
     credentials: true,
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
+app.use(
+  rateLimit({
+    windowMs: 5 * 60 * 1000,
+    limit: 150,
+    message: {
+      status: 429,
+      message: "Too many requests sent. Rate limit reached",
+    },
+    statusCode: 429,
+    legacyHeaders: false,
+    standardHeaders: "draft-8",
   }),
 );
 app.use(helmet());
