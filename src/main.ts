@@ -5,7 +5,6 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
-import mongoSanitize from "express-mongo-sanitize";
 
 import connect from "./config/db.ts";
 import errorHandler from "./middlewares/error.middleware.ts";
@@ -15,20 +14,32 @@ import { ServerError } from "./global/types.ts";
 
 const app: Express = express();
 
-app.use(helmet());
-app.use(mongoSanitize());
-app.use(express.json());
-app.use(cookieParser());
-app.use(bodyParser.json());
-app.use(express.urlencoded({ extended: true }));
+const ENV = process.env.NODE_ENV;
+
+const devOrigins: string[] = ["http://localhost:5173", "http://127.0.0.1:5173"];
+const prodOrigins: string[] = [];
+
+const allowedOrigins = ENV !== "prod" ? devOrigins : prodOrigins;
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: (origin: any, callback: any): void => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Origin not allowed"), false);
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
+app.use(helmet());
+app.use(express.json());
+app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 app.use("/auth", AuthRouter);
 app.use(errorHandler);
