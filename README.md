@@ -18,8 +18,8 @@
 
 <div align="center">
 
-  [![Static Badge](https://img.shields.io/badge/Follow%20me-r?style=flat&logo=bluesky&logoColor=white&label=%40shaedow2000&labelColor=blue&color=white)](https://x.com/shaedow2000)
-  [![Static Badge](https://img.shields.io/badge/Follow%20me-r?style=flat&logo=x&logoColor=white&label=%40shaedow2000&labelColor=black&color=white)](https://bsky.app/profile/shaedow2000.bsky.social)
+  [![Static Badge](https://img.shields.io/badge/Follow%20me-r?style=flat&logo=bluesky&logoColor=white&label=%40shaedow2000&labelColor=blue&color=white)](https://bsky.app/profile/shaedow2000.bsky.social)
+  [![Static Badge](https://img.shields.io/badge/Follow%20me-r?style=flat&logo=x&logoColor=white&label=%40shaedow2000&labelColor=black&color=white)](https://x.com/shaedow2000)
   
 </div>
   
