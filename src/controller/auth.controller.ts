@@ -846,7 +846,7 @@ const deleteAccount = wrapper(
 
     mailer.sendAccountDeletedMail(account.email, account.username);
 
-    return res.status(204);
+    return res.status(200).json({ status: 200, message: "Account deleted" });
   },
 );
 
